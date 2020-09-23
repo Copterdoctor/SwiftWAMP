@@ -5,7 +5,7 @@ import PackageDescription
 
 let package = Package(
     name: "SwiftWAMP",
-    platforms: [.iOS(.v13)],
+    platforms: [.iOS(.v13), .macOS(.v10_12)],
     products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(
@@ -17,6 +17,8 @@ let package = Package(
         .package(url: "https://github.com/daltoniam/Starscream.git", .upToNextMinor(from: "4.0.0")),
         .package(url: "https://github.com/krzyzanowskim/CryptoSwift.git", .upToNextMinor(from: "1.3.2")),
         .package(url: "https://github.com/SwiftyJSON/SwiftyJSON.git", .upToNextMinor(from: "5.0.0")),
+        .package(url: "https://github.com/Quick/Quick.git", .upToNextMajor(from: "3.0.0")),
+        .package(url: "https://github.com/Quick/Nimble.git", .upToNextMajor(from: "8.0.1"))
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
@@ -26,6 +28,7 @@ let package = Package(
             dependencies: ["CryptoSwift", "Starscream", "SwiftyJSON"]),
         .testTarget(
             name: "SwiftWAMPTests",
-            dependencies: ["SwiftWAMP", "CryptoSwift", "Starscream", "SwiftyJSON"]),
-    ]
+            dependencies: ["SwiftWAMP", "CryptoSwift", "Starscream", "SwiftyJSON", "Quick", "Nimble"]),
+    ],
+    swiftLanguageVersions: [.v5]
 )

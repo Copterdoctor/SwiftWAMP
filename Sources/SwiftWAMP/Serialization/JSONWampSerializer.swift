@@ -22,8 +22,9 @@ class JSONWampSerializer: WampSerializer {
         }
     }
     
+    //TODO: Look into how this JSON is handled. Don't like the [Any] being used.
     open func unpack(_ data: Data) -> [Any]? {
-        let json = JSON(data: data)
-        return json.arrayObject as [Any]?
+        let json = try? JSON(data: data)
+        return json?.arrayObject as [Any]?
     }
 }

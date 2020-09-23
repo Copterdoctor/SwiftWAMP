@@ -7,13 +7,13 @@
 
 import Foundation
 
-protocol WampTransportDelegate {
+public protocol WampTransportDelegate {
     func wampTransportDidConnectWithSerializer(_ serializer: WampSerializer)
-    func wampTransportDidDisconnect(_ error: NSError?, reason: String?)
+    func wampTransportDidDisconnect(_ reason: String, code: UInt16)
     func wampTransportReceivedData(_ data: Data)
 }
 
-protocol WampTransport {
+public protocol WampTransport {
     var delegate: WampTransportDelegate? { get set }
     func connect()
     func disconnect(_ reason: String)
