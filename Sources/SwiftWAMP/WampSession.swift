@@ -10,7 +10,7 @@ import Foundation
 
 // MARK: Call callbacks
 public typealias CallCallback = (_ details: [String: Any], _ results: [Any]?, _ kwResults: [String: Any]?) -> Void
-typealias ErrorCallCallback = (_ details: [String: Any], _ error: String, _ args: [Any]?, _ kwargs: [String: Any]?) -> Void
+public typealias ErrorCallCallback = (_ details: [String: Any], _ error: String, _ args: [Any]?, _ kwargs: [String: Any]?) -> Void
 
 //TODO: Review callbacks
 // MARK: Callee callbacks
@@ -22,18 +22,18 @@ typealias ErrorCallCallback = (_ details: [String: Any], _ error: String, _ args
 //public typealias ErrorUnregsiterCallback = (details: [String: AnyObject], error: String) -> Void
 
 // MARK: Subscribe callbacks
-typealias SubscribeCallback = (_ subscription: Subscription) -> Void
-typealias ErrorSubscribeCallback = (_ details: [String: Any], _ error: String) -> Void
-typealias EventCallback = (_ details: [String: Any], _ results: [Any]?, _ kwResults: [String: Any]?) -> Void
-typealias UnsubscribeCallback = () -> Void
-typealias ErrorUnsubscribeCallback = (_ details: [String: Any], _ error: String) -> Void
+public typealias SubscribeCallback = (_ subscription: Subscription) -> Void
+public typealias ErrorSubscribeCallback = (_ details: [String: Any], _ error: String) -> Void
+public typealias EventCallback = (_ details: [String: Any], _ results: [Any]?, _ kwResults: [String: Any]?) -> Void
+public typealias UnsubscribeCallback = () -> Void
+public typealias ErrorUnsubscribeCallback = (_ details: [String: Any], _ error: String) -> Void
 
 // MARK: Publish callbacks
-typealias PublishCallback = () -> Void
-typealias ErrorPublishCallback = (_ details: [String: Any], _ error: String) -> Void
+public typealias PublishCallback = () -> Void
+public typealias ErrorPublishCallback = (_ details: [String: Any], _ error: String) -> Void
 
 // TODO: Expose only an interface (like Cancellable) to user
-class Subscription {
+open class Subscription {
     fileprivate let session: WampSession
     internal let subscription: Int
     internal let eventCallback: EventCallback
@@ -69,48 +69,48 @@ public protocol WampSessionDelegate {
     func wampSessionEnded(_ reason: String)
 }
 
-public class WampSession: WampTransportDelegate {
+open class WampSession: WampTransportDelegate {
     // MARK: Public typealiases
 
     // MARK: delegate
-    var delegate: WampSessionDelegate?
+    open var delegate: WampSessionDelegate?
 
     // MARK: Constants
     // No callee role for now
-    private let supportedRoles: [WampRole] = [WampRole.Caller, WampRole.Subscriber, WampRole.Publisher]
-    private let clientName = "SwiftWAMP-1.0.0"
+    fileprivate let supportedRoles: [WampRole] = [WampRole.Caller, WampRole.Subscriber, WampRole.Publisher]
+    fileprivate let clientName = "SwiftWAMP-1.0.0"
 
     // MARK: Members
-    private let realm: String
-    private var transport: WampTransport
-    private let authmethods: [String]?
-    private let authid: String?
-    private let authrole: String?
-    private let authextra: [String: Any]?
+    fileprivate let realm: String
+    fileprivate var transport: WampTransport
+    fileprivate let authmethods: [String]?
+    fileprivate let authid: String?
+    fileprivate let authrole: String?
+    fileprivate let authextra: [String: Any]?
 
     // MARK: State members
-    private var currRequestId: Int = 1
+    fileprivate var currRequestId: Int = 1
 
     // MARK: Session state
-    private var serializer: WampSerializer?
-    private var sessionId: Int?
-    private var routerSupportedRoles: [WampRole]?
+    fileprivate var serializer: WampSerializer?
+    fileprivate var sessionId: Int?
+    fileprivate var routerSupportedRoles: [WampRole]?
 
     // MARK: Call role
     //                         requestId
-    private var callRequests: [Int: (callback: CallCallback, errorCallback: ErrorCallCallback)] = [:]
+    fileprivate var callRequests: [Int: (callback: CallCallback, errorCallback: ErrorCallCallback)] = [:]
 
     // MARK: Subscriber role
     //                              requestId
-    private var subscribeRequests: [Int: (callback: SubscribeCallback, errorCallback: ErrorSubscribeCallback, eventCallback: EventCallback)] = [:]
+    fileprivate var subscribeRequests: [Int: (callback: SubscribeCallback, errorCallback: ErrorSubscribeCallback, eventCallback: EventCallback)] = [:]
     //                          subscription
-    private var subscriptions: [Int: Subscription] = [:]
+    fileprivate var subscriptions: [Int: Subscription] = [:]
     //                                requestId
-    private var unsubscribeRequests: [Int: (subscription: Int, callback: UnsubscribeCallback, errorCallback: ErrorUnsubscribeCallback)] = [:]
+    fileprivate var unsubscribeRequests: [Int: (subscription: Int, callback: UnsubscribeCallback, errorCallback: ErrorUnsubscribeCallback)] = [:]
 
     // MARK: Publisher role
     //                            requestId
-    private var publishRequests: [Int: (callback: PublishCallback, errorCallback: ErrorPublishCallback)] = [:]
+    fileprivate var publishRequests: [Int: (callback: PublishCallback, errorCallback: ErrorPublishCallback)] = [:]
 
     // MARK: C'tor
     required public init(realm: String, transport: WampTransport, authmethods: [String]?=nil, authid: String?=nil, authrole: String?=nil, authextra: [String: Any]?=nil){
@@ -138,7 +138,7 @@ public class WampSession: WampTransportDelegate {
     }
 
     // MARK: Caller role
-    func call(_ proc: String, options: [String: Any]=[:], args: [Any]?=nil, kwargs: [String: Any]?=nil, onSuccess: @escaping CallCallback, onError: @escaping ErrorCallCallback) {
+    open func call(_ proc: String, options: [String: Any]=[:], args: [Any]?=nil, kwargs: [String: Any]?=nil, onSuccess: @escaping CallCallback, onError: @escaping ErrorCallCallback) {
         let callRequestId = self.generateRequestId()
         // Tell router to dispatch call
         self.sendMessage(CallWampMessage(requestId: callRequestId, options: options, proc: proc, args: args, kwargs: kwargs))
@@ -153,7 +153,7 @@ public class WampSession: WampTransportDelegate {
 
     // MARK: Subscriber role
 
-    func subscribe(_ topic: String, options: [String: Any]=[:], onSuccess: @escaping SubscribeCallback, onError: @escaping ErrorSubscribeCallback, onEvent: @escaping EventCallback) {
+    open func subscribe(_ topic: String, options: [String: Any]=[:], onSuccess: @escaping SubscribeCallback, onError: @escaping ErrorSubscribeCallback, onEvent: @escaping EventCallback) {
         // TODO: assert topic is a valid WAMP uri
         let subscribeRequestId = self.generateRequestId()
         // Tell router to subscribe client on a topic
@@ -182,7 +182,7 @@ public class WampSession: WampTransportDelegate {
     }
 
     // with acknowledging
-    func publish(_ topic: String, options: [String: Any]=[:], args: [Any]?=nil, kwargs: [String: Any]?=nil, onSuccess: @escaping PublishCallback, onError: @escaping ErrorPublishCallback) {
+    open func publish(_ topic: String, options: [String: Any]=[:], args: [Any]?=nil, kwargs: [String: Any]?=nil, onSuccess: @escaping PublishCallback, onError: @escaping ErrorPublishCallback) {
         // add acknowledge to options, so we get callbacks
         var options = options
         options["acknowledge"] = true
@@ -196,11 +196,11 @@ public class WampSession: WampTransportDelegate {
 
     // MARK: WampTransportDelegate
 
-    public func wampTransportDidDisconnect(_ reason: String, code: UInt16) {
+    open func wampTransportDidDisconnect(_ reason: String, code: UInt16) {
             self.delegate?.wampSessionEnded(reason)
     }
 
-    public func wampTransportDidConnectWithSerializer(_ serializer: WampSerializer) {
+    open func wampTransportDidConnectWithSerializer(_ serializer: WampSerializer) {
         self.serializer = serializer
         // Start session by sending a Hello message!
 
@@ -230,7 +230,7 @@ public class WampSession: WampTransportDelegate {
         self.sendMessage(HelloWampMessage(realm: self.realm, details: details))
     }
 
-    public func wampTransportReceivedData(_ data: Data) {
+    open func wampTransportReceivedData(_ data: Data) {
         if let payload = self.serializer?.unpack(data), let message = WampMessages.createMessage(payload) {
             self.handleMessage(message)
         }

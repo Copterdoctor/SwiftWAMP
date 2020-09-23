@@ -8,11 +8,7 @@
 import Foundation
 import Starscream
 
-public class WampSocket: WampTransport, WebSocketDelegate {
-    
-    enum WebsocketMode {
-        case binary, text
-    }
+open class WampSocket: WampTransport, WebSocketDelegate {
     
     open var delegate: WampTransportDelegate?
     let socket: WebSocket
