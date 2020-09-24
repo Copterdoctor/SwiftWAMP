@@ -43,10 +43,10 @@ import SwiftWAMP
 
 
 let transport = WampSocket(wsEndpoint:  URL(string: <#"ws://my-router.com:8080/ws"#>)!)
-let session = WampSession(realm: <#"router-defined-realm"#>, transport: swampTransport)
+let session = WampSession(realm: <#"router-defined-realm"#>, transport: transport)
 // Set WampSessionDelegate
 session.delegate = self
-swampSession.connect()
+ession.connect()
 
 <!-- Once a connection has been established wait for WampSessionDelegate's callbacks to start a WAMP Session. -->
 
@@ -61,7 +61,7 @@ func wampSessionConnected(_ session: WampSession, sessionId: Int) {
 }
 ```
 
-### SwampSession constructor parameters
+### WampSession constructor parameters
 
 * `realm` - which realm to join
 * `transport` - a `WampSocket` implementation
@@ -76,16 +76,16 @@ func wampSessionConnected(_ session: WampSession, sessionId: Int) {
 
 Implement the following method:
 
-* `func swampSessionConnected(session: SwampSession, sessionId: Int)`
+* `func wampSessionConnected(session: WampSession, sessionId: Int)`
 * Fired once the session has established and authenticated a session, and has joined the realm successfully. (AKA You may now call, subscribe & publish.)
 
 Optional methods:
 
-* `func swampSessionHandleChallenge(authMethod: String, extra: [String: AnyObject]) -> String`
+* `func wampSessionHandleChallenge(authMethod: String, extra: [String: AnyObject]) -> String`
 * Fired when a challenge request arrives.
-* You can `return SwampCraAuthHelper.sign("your-secret", extra["challenge"] as! String)` to support `wampcra` auth method.
+* You can `return WampCraAuthHelper.sign("your-secret", extra["challenge"] as! String)` to support `wampcra` auth method.
 
-* `func swampSessionEnded(reason: String)`
+* `func wampSessionEnded(reason: String)`
 * Fired once the connection has ended.
 * `reason` is usually a WAMP-domain error.
 
@@ -196,21 +196,20 @@ session.publish(<#"com.myapp.hello"#>, options: ["disclose_me": true],  args: [1
 
 ___
 
-## Testing
+# Testing
 
 For now, only integration tests against crossbar exist.
 
 In order to run the tests:
 
 1. Install [Docker for Mac](https://docs.docker.com/engine/installation/mac/) (Easy Peasy)
-2. Open `Example/Swamp.xcworkspace` with XCode
-3. Select `Swamp_Test-iOS` or `Swamp_Test-OSX`
-4. Run the tests! (`Product -> Test` or ⌘U)
+2. 
 
-### Troubleshooting
+## Troubleshooting
+
 If for some reason the tests fail, make sure:
 
 * You have docker installed and available at `/usr/local/bin/docker`
 * You have an available port 8080 on your machine
 
-You can also inspect `Example/swamp-crossbar-instance.log` to find out what happened with the crossbar instance while the tests were executing.
+You can also inspect `**************/wamp-crossbar-instance.log` to find out what happened with the crossbar instance while the tests were executing.
