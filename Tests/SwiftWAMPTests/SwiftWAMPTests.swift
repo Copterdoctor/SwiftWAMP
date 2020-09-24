@@ -3,29 +3,43 @@ import Quick
 import Nimble
 @testable import SwiftWAMP
 
-//class TestSwampTransport: WampTransport {
-//    var delegate: WampTransportDelegate?
-//
-//    var dataSent: [Data]
-//
-//    init() {
-//        self.dataSent = []
-//    }
-//
-//    func connect() {
-//        self.delegate?.swampTransportDidConnectWithSerializer(JSONWampSerializer())
-//    }
-//
-//    func disconnect(_ reason: String) {
-//        self.delegate?.swampTransportDidDisconnect(nil, reason: reason)
-//    }
-//
-//    func sendData(_ data: Data) {
-//
-//    }
-//}
 
-class CrossbarIntegrationTestsSpec: QuickSpec {
+
+class CrossbarConnectionTest: QuickSpec {
+    override func spec() {
+        var session: WampSession?
+        
+        beforeSuite {
+            let url = URL(string: "ws://localhost:8080/ws")!
+            let transport = WampSocket(wsEndpoint: url)
+            session = WampSession(realm: "realm1", transport: transport, authmethods: ["anonymous"])
+            session?.connect()
+        }
+        
+        describe("Test Realm") {
+            
+            context("Creating session") {
+                it("Should not be nil") {
+                    expect(session).toNot( beNil() )
+                }
+            }
+            
+            context("Connecting to router") {
+                it("Should connect successfully to crossbario/crossbar docker container") {
+                    expect(session?.isConnected()).toEventually( beTrue() )
+                }
+            }
+        }
+        
+        
+    }
+    
+    static var allTests = [
+        ("spec", spec),
+    ]
+}
+
+class CrossbarPublishEvent: QuickSpec {
     override func spec() {
         var session: WampSession?
         

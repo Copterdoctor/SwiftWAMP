@@ -63,12 +63,6 @@ open class Subscription {
 //    private let session: WampSession
 //}
 
-public protocol WampSessionDelegate {
-    func wampSessionHandleChallenge(_ authMethod: String, extra: [String: Any]) -> String
-    func wampSessionConnected(_ session: WampSession, sessionId: Int)
-    func wampSessionEnded(_ reason: String)
-}
-
 open class WampSession: WampTransportDelegate {
     // MARK: Public typealiases
 
@@ -136,6 +130,8 @@ open class WampSession: WampTransportDelegate {
     final public func disconnect(_ reason: String="wamp.error.close_realm") {
         self.sendMessage(GoodbyeWampMessage(details: [:], reason: reason))
     }
+    
+    // TODO: Add option for delegate instead of callbacks
 
     // MARK: Caller role
     open func call(_ proc: String, options: [String: Any]=[:], args: [Any]?=nil, kwargs: [String: Any]?=nil, onSuccess: @escaping CallCallback, onError: @escaping ErrorCallCallback) {

@@ -3,9 +3,9 @@
   <a href="https://developer.apple.com/swift">
     <img src="http://img.shields.io/badge/Swift-5.0-brightgreen.svg?style=flat" alt="Language">
   </a>
-  <a href="https://github.com/Carthage/Carthage">
+  <!-- <a href="https://github.com/Carthage/Carthage">
     <img src="https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat" alt="Carthage" />
-  </a>
+  </a> -->
   <br />
   <a href="https://github.com/apple/swift-package-manager">
     <img src="https://img.shields.io/badge/Swift%20Package%20Manager-compatible-brightgreen.svg?style=flat" alt="Swift Package Manager" />
@@ -16,101 +16,96 @@
 
 Swift wamp is a [Web Application Messaging Protocal](https://wamp-proto.org/) implementation in Swift.
 
-This package is based on [iscriptology/swamp](https://github.com/iscriptology/swamp) which is no longer being maintained and no longer compatable with Swift 5.
+It is compatable and tested using [CrossbarIO](https://crossbar.io/) router.
+
+This package is based on [iscriptology/swamp](https://github.com/iscriptology/swamp) which is no longer being maintained or compatable with Swift 5.
 
 It currently supports calling remote procedures, subscribing on topics, and publishing events. It also supports authentication using ticket & wampcra authentication.
 
-Swamp utilizes WebSockets as its only available transport, and JSON as its serialization method.
+Swift wamp utilizes WebSockets as its only available transport, and JSON as its serialization method.
 
-Contributions to support MessagePack & Raw Sockets will be merged gladly!
+## Swift Package Manager
 
-## Swift Versions
-
-| Swift Version | Swamp Version   | Requirements         |
-|---------------|-----------------|----------------------|
-| 2.x           | 0.1.x           | OSX 10.9 or iOS 8.0  |
-| 3             | 0.2.0 and above | OSX 10.10 or iOS 8.0 |
-
-## Installation
-### cocoapods
-To use Swamp through cocoapods, add
-
-```ruby
-pod 'Swamp', '~> 0.2.0'
-```
-
-to your Podfile. (use `'~> 0.1.0'` for Swift 2)
-
-### Swift Package Manager
-To use Swamp through Swift Package Manager, create a Package.swift file:
+Too add SwiftWamp include the following package to your Package.json or add through xCode Add Package Dependencies
 
 ```swift
-import PackageDescription
-
-let package = Package(
-    name: "SwampTestProject",
-    targets: [],
-    dependencies: [
-        .Package(url: "https://github.com/RadarBee/swamp.git", majorVersion: 0, minor: 2)
-    ]
-)
+// Package.json
+.Package(url: "https://github.com/Copterdoctor/SwiftWAMP.git", from: "1.0.0")
 ```
 
-`$ swift build`
+## Setup
 
-## Usage
-#### Connect to router
+### Connect to router
 
 ```swift
-import Swamp
+import SwiftWAMP
 
-let swampTransport = WebSocketSwampTransport(wsEndpoint:  NSURL(string: "ws://my-router.com:8080/ws")!)
-let swampSession = SwampSession(realm: "router-defined-realm", transport: swampTransport)
-// Set delegate for callbacks
-// swampSession.delegate = <SwampSessionDelegate implementation>
+
+
+let transport = WampSocket(wsEndpoint:  URL(string: <#"ws://my-router.com:8080/ws"#>)!)
+let session = WampSession(realm: <#"router-defined-realm"#>, transport: swampTransport)
+// Set WampSessionDelegate
+session.delegate = self
 swampSession.connect()
-swampSession.disconnect()
+
+<!-- Once a connection has been established wait for WampSessionDelegate's callbacks to start a WAMP Session. -->
+
+func wampSessionConnected(_ session: WampSession, sessionId: Int) {
+    session.subscribe(<#"com.myapp.hello"#>, onSuccess: { (sub) in
+        print("SUBSCRIPTION: \(sub)")
+    }, onError: { (details, error) in
+        print("SUB ERROR DETAILS: \(details) :: ERROR: \(error)")
+    }, onEvent: { (details, results, kwResults) in
+        print("ON EVENT DETAILS: \(details)\n :: Results: \(results?.debugDescription)\n :: kwResults: (kwResults?.debugDescription)")
+    });
+}
 ```
-##### SwampSession constructor parameters
+
+### SwampSession constructor parameters
+
 * `realm` - which realm to join
-* `transport` - a `SwampTransport` implementation
+* `transport` - a `WampSocket` implementation
 * `authmethods` `authid` `authrole` `authextra` - See your router's documentation and use accordingly
 
-##### Connection/Disconnection
+### Connection/Disconnection
+
 * `connect()` - Establish transport and perform authentication if configured.
-* `disconnect()` - Opposite.
+* `disconnect()` - Manual Disconnect of websocket.
 
-Now you should wait for your delegate's callbacks:
+### WampSessionDelegate interface
 
-##### SwampSessionDelegate interface
-Implement the following methods:
+Implement the following method:
+
+* `func swampSessionConnected(session: SwampSession, sessionId: Int)`
+* Fired once the session has established and authenticated a session, and has joined the realm successfully. (AKA You may now call, subscribe & publish.)
+
+Optional methods:
 
 * `func swampSessionHandleChallenge(authMethod: String, extra: [String: AnyObject]) -> String`
-  * Fired when a challenge request arrives.
-  * You can `return SwampCraAuthHelper.sign("your-secret", extra["challenge"] as! String)` to support `wampcra` auth method.
-* `func swampSessionConnected(session: SwampSession, sessionId: Int)`
- * Fired once the session has established and authenticated a session, and has joined the realm successfully. (AKA You may now call, subscribe & publish.)
+* Fired when a challenge request arrives.
+* You can `return SwampCraAuthHelper.sign("your-secret", extra["challenge"] as! String)` to support `wampcra` auth method.
+
 * `func swampSessionEnded(reason: String)`
- * Fired once the connection has ended. 
- * `reason` is usually a WAMP-domain error, but it can also be a textual description of WTF just happened 
+* Fired once the connection has ended.
+* `reason` is usually a WAMP-domain error.
 
-#### Let's get the shit started!
-* **General note: Lots of callback functions receive args-kwargs pairs, check your other client implementaion to see which of them is utilized, and act accordingly.**
+# WAMP ROUTING
 
-##### Calling remote procedures
-Calling may fire two callbacks:
+**General note: Lots of callback functions receive args-kwargs pairs, check your other client implementaion to see which of them is utilized, and act accordingly.**
 
-* `onSuccess` - if calling has completed without errors.
-* `onError` - If the call has failed. (Either in router or in peer client.)
+## RPC
 
-###### Signature
 ```swift
 public func call(proc: String, options: [String: AnyObject]=[:], args: [AnyObject]?=nil, kwargs: [String: AnyObject]?=nil, onSuccess: CallCallback, onError: ErrorCallCallback)
 ```
 
-###### Simple use case:
+* `onSuccess` - if calling has completed without errors.
+* `onError` - If the call has failed. (Either in router or in peer client.)
+
+Basic
+
 ```swift
-session.call("wamp.procedure", args: [1, "argument1"],
+session.call(<#"com.myapp.helloRPC"#>, args: [1, "argument1"],
     onSuccess: { details, results, kwResults in
         // Usually result is in results[0], but do a manual check in your infrastructure
     },
@@ -119,9 +114,10 @@ session.call("wamp.procedure", args: [1, "argument1"],
     })
 ```
 
-###### Full use case:
+With kwargs
+
 ```swift
-session.call("wamp.procedure", options: ["disclose_me": true], args: [1, "argument1"], kwargs: ["arg1": 1, "arg2": "argument2"], 
+session.call(<#"com.myapp.helloRPC"#>, options: ["disclose_me": true], args: [1, "argument1"], kwargs: ["arg1": 1, "arg2": "argument2"],
     onSuccess: { details, results, kwResults in
         // Usually result is in results[0], but do a manual check in your infrastructure
     },
@@ -130,48 +126,47 @@ session.call("wamp.procedure", options: ["disclose_me": true], args: [1, "argume
     })
 ```
 
-##### Subscribing on topics
-Subscribing may fire three callbacks:
+___
 
-* `onSuccess` - if subscription has succeeded.
-* `onError` - if it has not.
-* `onEvent` - if it succeeded, this is fired when the actual event was published.
+## Subscribing on topics
 
-###### Signature
 ```swift
 public func subscribe(topic: String, options: [String: AnyObject]=[:], onSuccess: SubscribeCallback, onError: ErrorSubscribeCallback, onEvent: EventCallback)
 ```
 
-###### Simple use case:
-```swift
-session.subscribe("wamp.topic", onSuccess: { subscription in 
-    // subscription can be stored for subscription.cancel()
-    }, onError: { details, error in
-                                
-    }, onEvent: { details, results, kwResults in
-        // Event data is usually in results, but manually check blabla yadayada
-    })
-```
+* `onSuccess` - if subscription has succeeded.
+* `onError` - if subscription has failed.
+* `onEvent` - if it succeeded, this is fired when the actual event was published.
 
-###### Full use case:
+Basic
+
 ```swift
-session.subscribe("wamp.topic", options: ["disclose_me": true], 
-    onSuccess: { subscription in 
+session.subscribe(<#"com.myapp.hello"#>, onSuccess: { subscription in
         // subscription can be stored for subscription.cancel()
     }, onError: { details, error in
-        // handle error                        
+        // Handle error
     }, onEvent: { details, results, kwResults in
         // Event data is usually in results, but manually check blabla yadayada
     })
 ```
 
-##### Publishing events
-Publishing may either be called without callbacks (AKA unacknowledged) or with the following two callbacks:
+With kwargs
 
-* `onSuccess` - if publishing has succeeded.
-* `onError` - if it has not.
+```swift
+session.subscribe(<#"com.myapp.hello"#>, options: ["disclose_me": true],
+    onSuccess: { subscription in
+        // subscription can be stored for subscription.cancel()
+    }, onError: { details, error in
+        // handle error
+    }, onEvent: { details, results, kwResults in
+        // Event data is usually in results, but manually check blabla yadayada
+    })
+```
 
-###### Signature
+___
+
+## Publishing events
+
 ```swift
 // without acknowledging
 public func publish(topic: String, options: [String: AnyObject]=[:], args: [AnyObject]?=nil, kwargs: [String: AnyObject]?=nil)
@@ -179,13 +174,19 @@ public func publish(topic: String, options: [String: AnyObject]=[:], args: [AnyO
 public func publish(topic: String, options: [String: AnyObject]=[:], args: [AnyObject]?=nil, kwargs: [String: AnyObject]?=nil, onSuccess: PublishCallback, onError: ErrorPublishCallback) {
 ```
 
-###### Simple use case:
+* `onSuccess` - if publishing has succeeded to register.
+* `onError` - if publishing has failed to register.
+
+Simple
+
 ```swift
-session.publish("wamp.topic", args: [1, "argument2"])
+session.publish(<#"com.myapp.hello"#>, args: [1, "argument2"])
 ```
-###### Full use case:
+
+With options and kwargs
+
 ```swift
-session.publish("wamp.topic", options: ["disclose_me": true],  args: [1, "argument2"], kwargs: ["arg1": 1, "arg2": "argument2"],
+session.publish(<#"com.myapp.hello"#>, options: ["disclose_me": true],  args: [1, "argument2"], kwargs: ["arg1": 1, "arg2": "argument2"],
     onSuccess: {
         // Publication has been published!
     }, onError: { details, error in
@@ -193,8 +194,11 @@ session.publish("wamp.topic", options: ["disclose_me": true],  args: [1, "argume
     })
 ```
 
+___
+
 ## Testing
-For now, only integration tests against crossbar exist. I plan to add unit tests in the future.
+
+For now, only integration tests against crossbar exist.
 
 In order to run the tests:
 
@@ -210,21 +214,3 @@ If for some reason the tests fail, make sure:
 * You have an available port 8080 on your machine
 
 You can also inspect `Example/swamp-crossbar-instance.log` to find out what happened with the crossbar instance while the tests were executing.
-
-## Roadmap
-1. MessagePack & Raw Sockets
-2. Callee role
-3. More robust codebase and error handling
-4. More generic and comfortable API
-5. Advanced profile features
-
-## Contributions
-
-- Yossi Abraham, yo.ab@outlook.com (Author)
-- Dany Sousa, @danysousa (Swift 3 support
-- Kevin Lanik, @MPKevin (Swift Package Manager support)
-
-## License
-
-I don't care, MIT because it's `pod lib create` default and I'm too lazy to [tldrlegal](https://tldrlegal.com).
-
