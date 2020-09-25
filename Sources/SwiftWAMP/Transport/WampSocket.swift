@@ -70,7 +70,7 @@ open class WampSocket: WampTransport, WebSocketDelegate {
     // TODO: Starscream V3.0.0
     public func didReceive(event: WebSocketEvent, client: WebSocket) {
         switch event {
-        case .connected(let headers):
+        case .connected:
             delegate?.wampTransportDidConnectWithSerializer(JSONWampSerializer())
         case .disconnected(let reason, let code):
             delegate?.wampTransportDidDisconnect(reason, code: code)
@@ -78,10 +78,8 @@ open class WampSocket: WampTransport, WebSocketDelegate {
             if let data = string.data(using: String.Encoding.utf8) {
                 delegate?.wampTransportReceivedData(data)
             }
-            print("Received text: \(string)")
         case .binary(let data):
             delegate?.wampTransportReceivedData(data)
-            print("Received data: \(data.count)")
         case .ping(_):
             break
         case .pong(_):
@@ -91,11 +89,8 @@ open class WampSocket: WampTransport, WebSocketDelegate {
         case .reconnectSuggested(_):
             break
         case .cancelled:
-            //                isConnected = false
-            print("IS CANCELLED")
+            break
         case .error(let error):
-            //                isConnected = false
-            //                handleError(error)
             print("ERROR: \(error.debugDescription)")
         }
     }

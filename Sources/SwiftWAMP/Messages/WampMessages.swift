@@ -45,9 +45,6 @@ enum WampMessages: Int {
     /// payload consists of all data related to a message, WIHTHOUT the first one - the message identifier
     typealias WampMessageFactory = (_ payload: [Any]) -> WampMessage
 
-    // Split into 2 dictionaries because Swift compiler thinks a single one is too complex
-    // Perhaps find a better solution in the future
-
     fileprivate static let mapping1: [WampMessages: WampMessageFactory] = [
         WampMessages.error: ErrorWampMessage.init,
 

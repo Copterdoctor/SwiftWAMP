@@ -14,9 +14,7 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/daltoniam/Starscream.git", .upToNextMinor(from: "4.0.0")),
         .package(url: "https://github.com/krzyzanowskim/CryptoSwift.git", .upToNextMinor(from: "1.3.2")),
-        .package(url: "https://github.com/SwiftyJSON/SwiftyJSON.git", .upToNextMinor(from: "5.0.0")),
-        .package(url: "https://github.com/Quick/Quick.git", .upToNextMajor(from: "3.0.0")),
-        .package(url: "https://github.com/Quick/Nimble.git", .upToNextMajor(from: "8.0.1"))
+        .package(url: "https://github.com/SwiftyJSON/SwiftyJSON.git", .upToNextMinor(from: "5.0.0"))
     ],
     targets: [
         .target(
@@ -24,7 +22,7 @@ let package = Package(
             dependencies: ["CryptoSwift", "Starscream", "SwiftyJSON"]),
         .testTarget(
             name: "SwiftWAMPTests",
-            dependencies: ["SwiftWAMP", "CryptoSwift", "Starscream", "SwiftyJSON", "Quick", "Nimble"]),
+            dependencies: ["SwiftWAMP", "CryptoSwift", "Starscream", "SwiftyJSON"]),
     ],
     swiftLanguageVersions: [.v5]
 )
