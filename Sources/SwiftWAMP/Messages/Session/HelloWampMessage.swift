@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import SwiftyJSON
 
 /// [HELLO, realm|string, details|dict]
 class HelloWampMessage: WampMessage {

@@ -1,12 +1,13 @@
 import XCTest
 @testable import SwiftWAMP
 
-func createTestSession(_ delegate: WampSessionDelegate) {
+func createTestSession(_ delegate: WampSessionDelegate?) -> WampSession {
     let url = URL(string: "ws://localhost:8080/ws")!
     let transport = WampSocket(wsEndpoint: url)
     let s = WampSession(realm: "realm1", transport: transport, authmethods: ["anonymous"])
     s.delegate = delegate
     s.connect()
+    return s
 }
 
 class CrossbarRouterTest: XCTestCase, WampSessionDelegate {
@@ -21,7 +22,7 @@ class CrossbarRouterTest: XCTestCase, WampSessionDelegate {
     }
     
     func testConnectToCrossbar() {
-        createTestSession(self)
+        let _ = createTestSession(self)
         self.exp = expectation(description: "Should connect successfully")
         wait(for: [self.exp], timeout: 20.0)
     }
@@ -45,40 +46,38 @@ class CrossbarRouterTest: XCTestCase, WampSessionDelegate {
 }
 
 class CrossbarPublishCallbacksTest: XCTestCase, WampSessionDelegate {
-    var pubCBExp: XCTestExpectation!
-
+    var exp: XCTestExpectation!
+    
     func testConnectAndPublish() {
-        createTestSession(self)
-        self.pubCBExp = expectation(description: "Should publish using callbacks")
-        wait(for: [self.pubCBExp], timeout: 20.0)
-
+        let _ = createTestSession(self)
+        self.exp = expectation(description: "Should publish using callbacks")
+        wait(for: [self.exp], timeout: 20.0)
     }
-
+    
     func wampSessionConnected(_ session: WampSession, sessionId: Int) {
         session.publish("com.myapp.CrossbarPublishCallbacksTest", options: [:], args: ["Hello World"], kwargs: nil, onSuccess: {
             XCTAssert(true)
             session.disconnect()
-            self.pubCBExp.fulfill()
+            self.exp.fulfill()
         }, onError: { (details, error) in
             XCTFail("PUBLISH FAIL \(details) : \(error)")
         })
     }
     
     func wampSessionEnded(_ reason: String) {
-        print("CrossbarPublishCallbacksTest \(reason)")
+        XCTFail("CrossbarPublishCallbacksTest \(reason)")
     }
 }
 
 class CrossbarPublishDelegateTest: XCTestCase, WampSessionDelegate {
     var pubDelExp: XCTestExpectation!
-
+    
     func testConnectAndPublish() {
-        createTestSession(self)
+        let _ = createTestSession(self)
         self.pubDelExp = expectation(description: "Should publish using delegate")
         wait(for: [self.pubDelExp], timeout: 20.0)
-
     }
-
+    
     func wampSessionConnected(_ session: WampSession, sessionId: Int) {
         session.publish("com.myapp.CrossbarPublishDelegateTest", options: [:], args: ["Hello World"], kwargs: nil)
     }
@@ -94,31 +93,23 @@ class CrossbarPublishDelegateTest: XCTestCase, WampSessionDelegate {
     }
     
     func wampSessionEnded(_ reason: String) {
-        print("CrossbarPublishDelegateTest \(reason)")
+        XCTFail("CrossbarPublishDelegateTest \(reason)")
     }
 }
 
 class CrossbarSubscribeCallbacksTest: XCTestCase, WampSessionDelegate {
     var publisher: WampSession!
     var subscriber: WampSession!
-    var subCBExp: XCTestExpectation!
-
-    func testConnectAndPublish() {
-        let url = URL(string: "ws://localhost:8080/ws")!
-        let transport1 = WampSocket(wsEndpoint: url)
-        let transport2 = WampSocket(wsEndpoint: url)
+    var exp: XCTestExpectation!
+    
+    func testConnectAndSubscribe() {
+        subscriber = createTestSession(self)
+        publisher = createTestSession(nil)
         
-        subscriber = WampSession(realm: "realm1", transport: transport1, authmethods: ["anonymous"])
-        subscriber.delegate = self
-        subscriber.connect()
-        
-        publisher = WampSession(realm: "realm1", transport: transport2, authmethods: ["anonymous"])
-        publisher.connect()
-        
-        self.subCBExp = expectation(description: "Should publish using callbacks")
-        wait(for: [self.subCBExp], timeout: 20.0)
+        self.exp = expectation(description: "Should publish using callbacks")
+        wait(for: [self.exp], timeout: 20.0)
     }
-
+    
     func wampSessionConnected(_ session: WampSession, sessionId: Int) {
         self.subscriber.subscribe("com.myapp.CrossbarSubscribeCallbacksTest") { (sub) in
             self.publishEvent(self.publisher)
@@ -127,7 +118,7 @@ class CrossbarSubscribeCallbacksTest: XCTestCase, WampSessionDelegate {
         } onEvent: { (details, results, kwargs) in
             let eventResults = results?.first as? String
             XCTAssert(eventResults == "Hello World")
-            self.subCBExp.fulfill()
+            self.exp.fulfill()
         }
     }
     
@@ -140,7 +131,7 @@ class CrossbarSubscribeCallbacksTest: XCTestCase, WampSessionDelegate {
     }
     
     func wampSessionEnded(_ reason: String) {
-        print("CrossbarSubscribeCallbacksTest \(reason)")
+        XCTFail("CrossbarSubscribeCallbacksTest \(reason)")
     }
     
 }
@@ -148,24 +139,16 @@ class CrossbarSubscribeCallbacksTest: XCTestCase, WampSessionDelegate {
 class CrossbarSubscribeDelegateTest: XCTestCase, WampSessionDelegate {
     var publisher: WampSession!
     var subscriber: WampSession!
-    var subDelExp: XCTestExpectation!
-
-    func testConnectAndPublish() {
-        let url = URL(string: "ws://localhost:8080/ws")!
-        let transport1 = WampSocket(wsEndpoint: url)
-        let transport2 = WampSocket(wsEndpoint: url)
+    var exp: XCTestExpectation!
+    
+    func testConnectAndSubscribe() {
+        subscriber = createTestSession(self)
+        publisher = createTestSession(nil)
         
-        subscriber = WampSession(realm: "realm1", transport: transport1, authmethods: ["anonymous"])
-        subscriber.delegate = self
-        subscriber.connect()
-        
-        publisher = WampSession(realm: "realm1", transport: transport2, authmethods: ["anonymous"])
-        publisher.connect()
-        
-        self.subDelExp = expectation(description: "Should publish using delegate method")
-        wait(for: [self.subDelExp], timeout: 20.0)
+        self.exp = expectation(description: "Should publish using delegate method")
+        wait(for: [self.exp], timeout: 20.0)
     }
-
+    
     func wampSessionConnected(_ session: WampSession, sessionId: Int) {
         self.subscriber.subscribe("com.myapp.CrossbarSubscribeDelegateTest")
     }
@@ -175,19 +158,220 @@ class CrossbarSubscribeDelegateTest: XCTestCase, WampSessionDelegate {
     }
     
     func wampSubError(details: [String : Any], error: String) {
-        print("Wamp Sub Errorn\nDetails: \(details)\nError: \(error)")
-        XCTFail()
+        XCTFail("Wamp Sub Errorn\nDetails: \(details)\nError: \(error)")
     }
     
-    func wampSubEventReceived(details: [String : AnyObject], results: [AnyObject]?, kwargs: [String : AnyObject]?) {
+    func wampSubEventReceived(details: [String : Any], results: [Any]?, kwargs: [String : Any]?) {
         let eventResults = results?.first as? String
         XCTAssert(eventResults == "Hello World")
-        self.subDelExp.fulfill()
+        self.exp.fulfill()
     }
     
     func wampSessionEnded(_ reason: String) {
-        print("CrossbarSubscribeDelegateTest \(reason)")
+        XCTFail("CrossbarSubscribeDelegateTest \(reason)")
     }
     
 }
 
+// TODO: UNSUBSCRIBE TEST
+
+class CrossbarRegisterCalleeCallbacksTest: XCTestCase, WampSessionDelegate {
+    var exp: XCTestExpectation!
+    let proc = "com.SwiftWAMP.CrossbarRegisterCalleeCallbacksTest"
+    
+    func testConnectAndRegister() {
+        let _ = createTestSession(self)
+        self.exp = expectation(description: "Should register using callbacks")
+        wait(for: [self.exp], timeout: 20.0)
+        
+    }
+    
+    func wampSessionConnected(_ session: WampSession, sessionId: Int) {
+        session.register(self.proc) { (reg) in
+            XCTAssert(true)
+            self.exp.fulfill()
+        } onError: { (details, error) in
+            XCTFail("CrossbarRegisterCalleeCallbacksTest \(details) \(error)")
+        } onFire: { (details, args, kwargs) -> (options: [String : Any], args: [Any], kwargs: [String : Any]) in
+            return ([:], ["Test"], ["Test":"Test"])
+        }
+    }
+    
+    func wampSessionEnded(_ reason: String) {
+        XCTFail("CrossbarRegisterCalleeCallbacksTest \(reason)")
+    }
+}
+
+class CrossbarRegisterCalleeDelegateTest: XCTestCase, WampSessionDelegate {
+    var exp: XCTestExpectation!
+    let proc = "com.SwiftWAMP.CrossbarRegisterCalleeDelegateTest"
+    
+    func testConnectAndRegister() {
+        let _ = createTestSession(self)
+        self.exp = expectation(description: "Should register using callbacks")
+        wait(for: [self.exp], timeout: 20.0)
+        
+    }
+    
+    func wampSessionConnected(_ session: WampSession, sessionId: Int) {
+        session.register(self.proc)
+    }
+    
+    func wampRegistrationSuccessful(_ registration: Registration) {
+        XCTAssert(true)
+        self.exp.fulfill()
+    }
+    
+    func wampRegistrationError(details: [String : Any], error: String) {
+        XCTFail("CrossbarRegisterCalleeDelegateTest \(details) \(error)")
+    }
+    
+    func wampSessionEnded(_ reason: String) {
+        XCTFail("CrossbarPublishCallbacksTest \(reason)")
+    }
+}
+
+class CrossbarRegisterSameTwiceDelegateTest: XCTestCase, WampSessionDelegate {
+    var exp: XCTestExpectation!
+    let proc = "CrossbarRegisterSameTwiceDelegateTest"
+    
+    func testConnectAndRegisterTwice() {
+        let _ = createTestSession(self)
+        let _ = createTestSession(self)
+        self.exp = expectation(description: "Should fail to register same method twice")
+        wait(for: [self.exp], timeout: 20.0)
+        
+    }
+    
+    func wampSessionConnected(_ session: WampSession, sessionId: Int) {
+        session.register(self.proc)
+    }
+    
+    func wampRegistrationSuccessful(_ registration: Registration) {
+        return
+    }
+    
+    func wampRegistrationError(details: [String : Any], error: String) {
+        XCTAssert(error == "wamp.error.procedure_already_exists")
+        self.exp.fulfill()
+    }
+    
+    func wampSessionEnded(_ reason: String) {
+        XCTFail("CrossbarPublishCallbacksTest \(reason)")
+    }
+}
+
+class CrossbarRegisterSameTwiceCallbackTest: XCTestCase, WampSessionDelegate {
+    var exp: XCTestExpectation!
+    let proc = "com.SwiftWAMP.CrossbarRegisterSameTwiceCallbackTest"
+    
+    func testConnectAndRegisterTwice() {
+        let _ = createTestSession(self)
+        let _ = createTestSession(self)
+        self.exp = expectation(description: "Should fail to register same method twice")
+        wait(for: [self.exp], timeout: 20.0)
+        
+    }
+    
+    func wampSessionConnected(_ session: WampSession, sessionId: Int) {
+        session.register(self.proc) { (reg) in
+            return
+        } onError: { (details, error) in
+            XCTAssert(error == "wamp.error.procedure_already_exists")
+            self.exp.fulfill()
+        } onFire: { (details, args, kwargs) -> (options: [String : Any], args: [Any], kwargs: [String : Any]) in
+            return ([:], ["Test"], ["Test":"Test"])
+        }
+    }
+    
+    func wampSessionEnded(_ reason: String) {
+        XCTFail("CrossbarRegisterCalleeCallbacksTest \(reason)")
+    }
+}
+
+class CrossbarRemoteProcedureCallCallbackTest: XCTestCase, WampSessionDelegate {
+    var callee: WampSession!
+    var caller: WampSession!
+    var exp: XCTestExpectation!
+    let proc = "com.SwiftWAMP.CrossbarRemoteProcedureCallCallbackTest"
+    let jsonObj = [
+        "result": "success"
+    ]
+    
+    func testConnectAndRegister() {
+        callee = createTestSession(self)
+        caller = createTestSession(self)
+        self.exp = expectation(description: "Should call registered method using callbacks")
+        wait(for: [self.exp], timeout: 20.0)
+    }
+    
+    func wampSessionConnected(_ session: WampSession, sessionId: Int) {
+        if session == callee {
+            callee.register(self.proc) { (reg) in
+                self.caller.call(self.proc) { (details, results, kwargs) in
+                    if let results = results as? [String] {
+                        let test = results[0]
+                        XCTAssert(test == "CrossbarRemoteProcedureCallCallbackTest")
+                    }
+                    self.exp.fulfill()
+                } onError: { (details, error, args, kwargs) in
+                    XCTFail(error)
+                }
+            } onError: { (details, error) in
+                XCTFail(error)
+            } onFire: { (details, args, kwargs) -> (options: [String:Any], args: [Any], kwargs: [String: Any]) in
+                return ([:], ["CrossbarRemoteProcedureCallCallbackTest"], [:])
+            }
+            
+        }
+        
+    }
+    
+    func wampSessionEnded(_ reason: String) {
+        XCTFail("CrossbarRegisterCalleeCallbacksTest \(reason)")
+    }
+}
+
+class CrossbarRemoteProcedureCallDelegateTest: XCTestCase, WampSessionDelegate {
+    var callee: WampSession!
+    var caller: WampSession!
+    var exp: XCTestExpectation!
+    let proc = "com.SwiftWAMP.CrossbarRemoteProcedureCallDelegateTest"
+    
+    func testConnectAndRegister() {
+        callee = createTestSession(self)
+        caller = createTestSession(self)
+        self.exp = expectation(description: "Should call registered method using delegate")
+        wait(for: [self.exp], timeout: 20.0)
+    }
+    
+    func wampSessionConnected(_ session: WampSession, sessionId: Int) {
+        if session == callee {
+            callee.register(self.proc)
+        }
+        
+    }
+    
+    func wampRegistrationSuccessful(_ registration: Registration) {
+        caller.call(self.proc)
+    }
+    
+    func wampCallSuccessful(details: [String : Any], results: [Any]?, kwResults: [String : Any]?) {
+        let result = results as! [String]
+        XCTAssert(result[0] == self.proc)
+        self.exp.fulfill()
+    }
+    
+    func wampProcedureCalled(details: [String : Any], args: [Any]?, kwargs: [String : Any]?) -> (options: [String : Any], args: [Any], kwargs: [String : Any])? {
+        return ([:], [self.proc], [:])
+    }
+    
+    func wampRegistrationError(details: [String : Any], error: String) {
+        XCTFail(error)
+    }
+    
+    func wampSessionEnded(_ reason: String) {
+        XCTFail("CrossbarRegisterCalleeCallbacksTest \(reason)")
+    }
+}
+// TODO: UNREGISTER TEST

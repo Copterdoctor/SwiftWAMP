@@ -81,7 +81,7 @@ Implement the following method:
 
 Optional methods:
 
-* `func wampSessionHandleChallenge(authMethod: String, extra: [String: AnyObject]) -> String`
+* `func wampSessionHandleChallenge(authMethod: String, extra: [String: Any]) -> String`
 * Fired when a challenge request arrives.
 * You can `return WampCraAuthHelper.sign("your-secret", extra["challenge"] as! String)` to support `wampcra` auth method.
 
@@ -96,7 +96,7 @@ Optional methods:
 ## RPC
 
 ```swift
-public func call(proc: String, options: [String: AnyObject]=[:], args: [AnyObject]?=nil, kwargs: [String: AnyObject]?=nil, onSuccess: CallCallback, onError: ErrorCallCallback)
+public func call(proc: String, options: [String: Any]=[:], args: [Any]?=nil, kwargs: [String: Any]?=nil, onSuccess: CallCallback, onError: ErrorCallCallback)
 ```
 
 * `onSuccess` - if calling has completed without errors.

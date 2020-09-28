@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import SwiftyJSON
 
 /// [AUTHENTICATE, signature|string, extra|dict]
 class AuthenticateWampMessage: WampMessage {
@@ -14,7 +13,7 @@ class AuthenticateWampMessage: WampMessage {
     let signature: String
     let extra: [String: Any]
     
-    init(signature: String, extra: [String: AnyObject]) {
+    init(signature: String, extra: [String: Any]) {
         self.signature = signature
         self.extra = extra
     }

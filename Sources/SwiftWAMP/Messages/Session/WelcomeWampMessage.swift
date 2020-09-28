@@ -6,15 +6,14 @@
 //
 
 import Foundation
-import SwiftyJSON
 
 /// [WELCOME, sessionId|number, details|Dict]
 class WelcomeWampMessage: WampMessage {
     
     let sessionId: Int
-    let details: [String: AnyObject]
+    let details: [String: Any]
     
-    init(sessionId: Int, details: [String: AnyObject]) {
+    init(sessionId: Int, details: [String: Any]) {
         self.sessionId = sessionId
         self.details = details
     }
@@ -23,7 +22,7 @@ class WelcomeWampMessage: WampMessage {
     
     required init(payload: [Any]) {
         self.sessionId = payload[0] as! Int
-        self.details = payload[1] as! [String: AnyObject]
+        self.details = payload[1] as! [String: Any]
     }
     
     func marshal() -> [Any] {

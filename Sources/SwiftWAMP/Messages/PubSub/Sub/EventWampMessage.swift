@@ -12,12 +12,12 @@ class EventWampMessage: WampMessage {
     
     let subscription: Int
     let publication: Int
-    let details: [String: AnyObject]
+    let details: [String: Any]
     
-    let args: [AnyObject]?
-    let kwargs: [String: AnyObject]?
+    let args: [Any]?
+    let kwargs: [String: Any]?
     
-    init(subscription: Int, publication: Int, details: [String: AnyObject], args: [AnyObject]?=nil, kwargs: [String: AnyObject]?=nil) {
+    init(subscription: Int, publication: Int, details: [String: Any], args: [Any]?=nil, kwargs: [String: Any]?=nil) {
         self.subscription = subscription
         self.publication = publication
         self.details = details
@@ -31,9 +31,9 @@ class EventWampMessage: WampMessage {
     required init(payload: [Any]) {
         self.subscription = payload[0] as! Int
         self.publication = payload[1] as! Int
-        self.details = payload[2] as! [String: AnyObject]
-        self.args = payload[safe: 3] as? [AnyObject]
-        self.kwargs = payload[safe: 4] as? [String: AnyObject]
+        self.details = payload[2] as! [String: Any]
+        self.args = payload[safe: 3] as? [Any]
+        self.kwargs = payload[safe: 4] as? [String: Any]
     }
     
     func marshal() -> [Any] {

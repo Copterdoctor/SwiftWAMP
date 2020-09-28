@@ -78,29 +78,9 @@ enum WampMessages: Int {
         WampMessages.unsubscribed: UnsubscribedWampMessage.init
     ]
 
-//    fileprivate static let mapping2: [WampMessages: WampMessageFactory] = [
-//        // RPC
-//        WampMessages.call: CallWampMessage.init,
-//        WampMessages.result: ResultWampMessage.init,
-//        WampMessages.register: RegisterWampMessage.init,
-//        WampMessages.registered: RegisteredWampMessage.init,
-//        WampMessages.invocation: InvocationWampMessage.init,
-//        WampMessages.yield: YieldWampMessage.init,
-//        WampMessages.unregister: UnregisterWampMessage.init,
-//        WampMessages.unregistered: UnregisteredWampMessage.init,
-//
-//        // PubSub
-//        WampMessages.publish: PublishWampMessage.init,
-//        WampMessages.published: PublishedWampMessage.init,
-//        WampMessages.event: EventWampMessage.init,
-//        WampMessages.subscribe: SubscribeWampMessage.init,
-//        WampMessages.subscribed: SubscribedWampMessage.init,
-//        WampMessages.unsubscribe: UnsubscribeWampMessage.init,
-//        WampMessages.unsubscribed: UnsubscribedWampMessage.init
-//    ]
-
 
     static func createMessage(_ payload: [Any]) -> WampMessage? {
+        print("Payload num \(payload[0])")
         if let messageType = WampMessages(rawValue: payload[0] as! Int) {
             if let messageFactory = mapping1[messageType] {
                 return messageFactory(Array(payload[1..<payload.count]))

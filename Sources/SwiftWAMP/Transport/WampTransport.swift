@@ -8,7 +8,7 @@
 import Foundation
 
 public protocol WampTransportDelegate {
-    func wampTransportDidConnectWithSerializer(_ serializer: WampSerializer)
+    func wampTransportDidConnect()
     func wampTransportDidDisconnect(_ reason: String, code: UInt16)
     func wampTransportReceivedData(_ data: Data)
 }

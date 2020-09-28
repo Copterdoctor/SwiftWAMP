@@ -6,15 +6,14 @@
 //
 
 import Foundation
-import SwiftyJSON
 
 /// [GOODBYE, details|dict, reason|uri]
 class GoodbyeWampMessage: WampMessage {
     
-    let details: [String: AnyObject]
+    let details: [String: Any]
     let reason: String
     
-    init(details: [String: AnyObject], reason: String) {
+    init(details: [String: Any], reason: String) {
         self.details = details
         self.reason = reason
     }
@@ -22,7 +21,7 @@ class GoodbyeWampMessage: WampMessage {
     // MARK: WampMessage protocol
     
     required init(payload: [Any]) {
-        self.details = payload[0] as! [String: AnyObject]
+        self.details = payload[0] as! [String: Any]
         self.reason = payload[1] as! String
     }
     

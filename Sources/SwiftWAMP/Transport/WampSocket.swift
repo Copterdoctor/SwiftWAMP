@@ -8,9 +8,9 @@
 import Foundation
 import Starscream
 
-open class WampSocket: WampTransport, WebSocketDelegate {
+open class WampSocket: WebSocketDelegate, WampTransport {
     
-    open var delegate: WampTransportDelegate?
+    public var delegate: WampTransportDelegate?
     let socket: WebSocket
     let mode: WebsocketMode
     
@@ -46,32 +46,11 @@ open class WampSocket: WampTransport, WebSocketDelegate {
     
     // MARK: WebSocketDelegate
     
-    // Starscream V2.0
-    //    open func websocketDidConnect(socket: WebSocket) {
-    //        // TODO: Check which serializer is supported by the server, and choose self.mode and serializer
-    //        delegate?.wampTransportDidConnectWithSerializer(JSONWampSerializer())
-    //    }
-    //
-    //    open func websocketDidDisconnect(socket: WebSocket, error: NSError?) {
-    //        delegate?.wampTransportDidDisconnect(error, reason: self.disconnectionReason)
-    //    }
-    //
-    //    open func websocketDidReceiveMessage(socket: WebSocket, text: String) {
-    //        if let data = text.data(using: String.Encoding.utf8) {
-    //            self.websocketDidReceiveData(socket: socket, data: data)
-    //        }
-    //    }
-    //
-    //    open func websocketDidReceiveData(socket: WebSocket, data: Data) {
-    //        print("WEB SOCKET DID RECEIVE DATA SOCKET \(socket)")
-    //        delegate?.wampTransportReceivedData(data)
-    //    }
-    
     // TODO: Starscream V3.0.0
     public func didReceive(event: WebSocketEvent, client: WebSocket) {
         switch event {
         case .connected:
-            delegate?.wampTransportDidConnectWithSerializer(JSONWampSerializer())
+            delegate?.wampTransportDidConnect()
         case .disconnected(let reason, let code):
             delegate?.wampTransportDidDisconnect(reason, code: code)
         case .text(let string):
@@ -85,8 +64,29 @@ open class WampSocket: WampTransport, WebSocketDelegate {
         case .pong(_):
             break
         case .viabilityChanged(_):
+            //TODO: Add delegate support for viability status
+            // Triggered when Network.viabilityUpdateHandler called
+            /// Set a block to be called when the connection's viability changes, which may be called
+            /// multiple times until the connection is cancelled.
+            ///
+            /// Connections that are not currently viable do not have a route, and packets will not be
+            /// sent or received. There is a possibility that the connection will become viable
+            /// again when network connectivity changes.
             break
         case .reconnectSuggested(_):
+            //TODO: Add delegate support for reconnections
+            // Triggered when Network.betterPathUpdateHandler called
+            /// A better path being available indicates that the system thinks there is a preferred path or
+            /// interface to use, compared to the one this connection is actively using. As an example, the
+            /// connection is established over an expensive cellular interface and an unmetered Wi-Fi interface
+            /// is now available.
+            ///
+            /// Set a block to be called when a better path becomes available or unavailable, which may be called
+            /// multiple times until the connection is cancelled.
+            ///
+            /// When a better path is available, if it is possible to migrate work from this connection to a new connection,
+            /// create a new connection to the endpoint. Continue doing work on this connection until the new connection is
+            /// ready. Once ready, transition work to the new connection and cancel this one.
             break
         case .cancelled:
             break

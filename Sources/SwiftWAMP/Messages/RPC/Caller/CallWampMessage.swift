@@ -30,7 +30,7 @@ class CallWampMessage: WampMessage {
         self.requestId = payload[0] as! Int
         self.options = payload[1] as! [String: Any]
         self.proc = payload[2] as! String
-        self.args = payload[safe: 3] as? [AnyObject]
+        self.args = payload[safe: 3] as? [Any]
         self.kwargs = payload[safe: 4] as? [String: Any]
     }
     
