@@ -420,6 +420,14 @@ open class WampSession: WampTransportDelegate {
         }
     }
     
+    public func wampTransportViabilityChanged(_ isViable: Bool) {
+        delegate?.wampViabilityChanged(isViable)
+    }
+    
+    public func wampTransportReconnectSuggested(_ betterPathAvailable: Bool) {
+        delegate?.wampReconnectSuggested(betterPathAvailable)
+    }
+    
     // MARK: Handle Messages
     
     fileprivate func handleMessage(_ message: WampMessage) {

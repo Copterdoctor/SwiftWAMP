@@ -11,6 +11,8 @@ public protocol WampTransportDelegate {
     func wampTransportDidConnect()
     func wampTransportDidDisconnect(_ reason: String, code: UInt16)
     func wampTransportReceivedData(_ data: Data)
+    func wampTransportViabilityChanged(_ isViable: Bool)
+    func wampTransportReconnectSuggested(_ betterPathAvailable: Bool)
 }
 
 public protocol WampTransport {

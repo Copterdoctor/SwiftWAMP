@@ -44,6 +44,34 @@ public protocol WampSessionDelegate {
     func wampSessionEnded(_ reason: String)
     
     
+    /// Triggered when Network.viabilityUpdateHandler called
+    ///
+    /// Set a block to be called when the connection's viability changes, which may be called
+    /// multiple times until the connection is cancelled.
+    ///
+    /// Connections that are not currently viable do not have a route, and packets will not be
+    /// sent or received. There is a possibility that the connection will become viable
+    /// again when network connectivity changes.
+    /// - Parameter isViable: true if current network connection is viable.
+    func wampViabilityChanged(_ isViable: Bool)
+    
+    /// Triggered when Network.betterPathUpdateHandler called
+    ///
+    /// A better path being available indicates that the system thinks there is a preferred path or
+    /// interface to use, compared to the one this connection is actively using. As an example, the
+    /// connection is established over an expensive cellular interface and an unmetered Wi-Fi interface
+    /// is now available.
+    ///
+    /// Set a block to be called when a better path becomes available or unavailable, which may be called
+    /// multiple times until the connection is cancelled.
+    ///
+    /// When a better path is available, if it is possible to migrate work from this connection to a new connection,
+    /// create a new connection to the endpoint. Continue doing work on this connection until the new connection is
+    /// ready. Once ready, transition work to the new connection and cancel this one.
+    /// - Parameter betterPathAvailable: true if there is a better network path available. e.g. wifi now availble instead of current cellular connection.
+    func wampReconnectSuggested(_ betterPathAvailable: Bool)
+    
+    
     /// Called when a subscribed topic event is received
     /// - Parameters:
     ///   - details: Dictionary that allows the Broker to provide additional event details in a extensible way.
@@ -151,6 +179,10 @@ extension WampSessionDelegate {
         return WampCraAuthHelper.sign("my_secret", challenge: challenge["challenge"] as! String)
     }
     
+    func wampViabilityChanged(_ isViable: Bool) {}
+    
+    func wampReconnectSuggested(_ betterPathAvailable: Bool) {}
+    
     // MARK: Delegate Alternatives to callbacks
     
     // MARK: Subscriptions
@@ -178,4 +210,5 @@ extension WampSessionDelegate {
     // MARK: Unregister
     func wampUnregisterSuccessful(_ registration: Registration) {}
     func wampUnregisterError(details: [String: Any], error: String) {}
+    
 }
