@@ -101,6 +101,16 @@ public class Registration {
 /// SwiftWAMP Websocket session
 /// Wamp Protocol documentation https://wamp-proto.org
 /// Autobahn used by Crossbar documentation https://autobahn.readthedocs.io/en/latest/wamp/programming.html#
+///
+/// Conforms to Equatable based on sessionId parameter.
+///
+/// - Parameters:
+///   - realm: Name of router realm e.g. "Realm1" default Crossbario/Crossbar docker image
+///   - transport: Instance of WampTransport
+///   - authmethods: Is used by the client to announce the authentication methods it is prepared to perform. For WAMP-CRA, this MUST include "wampcra". Leave nil for anonymous.
+///   - authid: Is the authentication ID (e.g. username) the client wishes to authenticate as. For WAMP-CRA, this MUST be provided. Leave nil for anonymous.
+///   - authrole: The desired role inside the realm. Refer to routers documentation. Leave nil if auth not required by router like Crossbario/Crossbar docker image.
+///   - authextra: Application-specific information. Refer to routers documentation. Leave nil if auth not required by router like Crossbario/Crossbar docker image.
 open class WampSession: WampTransportDelegate {
     
     // MARK: delegate
@@ -145,7 +155,7 @@ open class WampSession: WampTransportDelegate {
     /// - Parameters:
     ///   - realm: Name of router realm e.g. "Realm1" default Crossbario/Crossbar docker image
     ///   - transport: Instance of WampTransport
-    ///   - authmethods: is used by the client to announce the authentication methods it is prepared to perform. For WAMP-CRA, this MUST include "wampcra". Leave nil for anonymous.
+    ///   - authmethods: Is used by the client to announce the authentication methods it is prepared to perform. For WAMP-CRA, this MUST include "wampcra". Leave nil for anonymous.
     ///   - authid: Is the authentication ID (e.g. username) the client wishes to authenticate as. For WAMP-CRA, this MUST be provided. Leave nil for anonymous.
     ///   - authrole: The desired role inside the realm. Refer to routers documentation. Leave nil if auth not required by router like Crossbario/Crossbar docker image.
     ///   - authextra: Application-specific information. Refer to routers documentation. Leave nil if auth not required by router like Crossbario/Crossbar docker image.

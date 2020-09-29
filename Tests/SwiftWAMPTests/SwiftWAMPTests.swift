@@ -322,9 +322,7 @@ class CrossbarRemoteProcedureCallCallbackTest: XCTestCase, WampSessionDelegate {
             } onFire: { (details, args, kwargs) -> (options: [String:Any], args: [Any], kwargs: [String: Any]) in
                 return ([:], ["CrossbarRemoteProcedureCallCallbackTest"], [:])
             }
-            
         }
-        
     }
     
     func wampSessionEnded(_ reason: String) {

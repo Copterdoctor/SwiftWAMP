@@ -46,7 +46,7 @@
             ActionType = "Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.ShellScriptAction">
             <ActionContent
                title = "Start crossbar docker container"
-               scriptText = "exec &gt; &quot;/Users/jordan/SwiftWAMP/prebuild.log&quot; 2&gt;&amp;1&#10;echo &quot;Starting build scheme Pre-actions&quot;&#10;~/SwiftWAMP/Build-Scripts/start_crossbar.zsh&#10;"
+               scriptText = "exec &gt; &quot;/Users/jordan/SwiftWAMP/prebuild.log&quot; 2&gt;&amp;1&#10;echo &quot;Starting build scheme Pre-actions&quot;&#10;~/SwiftWAMP/Build-Scripts/start_crossbar.sh&#10;"
                shellToInvoke = "/bin/zsh">
                <EnvironmentBuildable>
                   <BuildableReference
