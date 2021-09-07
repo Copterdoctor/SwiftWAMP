@@ -8,6 +8,9 @@
 import Foundation
 import Starscream
 
+public typealias httpHeader = String
+public typealias httpHeaderValue = String
+
 open class WampSocket: WebSocketDelegate, WampTransport {
     
     public var delegate: WampTransportDelegate?
@@ -16,9 +19,12 @@ open class WampSocket: WebSocketDelegate, WampTransport {
     
     fileprivate var disconnectionReason: String?
     
-    public init(wsEndpoint: URL){
+    public init(wsEndpoint: URL, httpHeaders: [httpHeader:httpHeaderValue]? = nil){
         var request = URLRequest(url: wsEndpoint)
         request.setValue("wamp.2.json, wamp.2.msgpack", forHTTPHeaderField: "Sec-Websocket-Protocol")
+        httpHeaders?.forEach { (header: httpHeader, value: httpHeaderValue) in
+            request.setValue(value, forHTTPHeaderField: header)
+        }
         self.socket = WebSocket(request: request)
         //            WebSocket(url: wsEndpoint, protocols: ["wamp.2.json"])
         self.mode = .text

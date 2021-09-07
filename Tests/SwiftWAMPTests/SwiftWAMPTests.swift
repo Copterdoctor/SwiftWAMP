@@ -4,11 +4,14 @@ import XCTest
 func createTestSession(_ delegate: WampSessionDelegate?) -> WampSession {
     let url = URL(string: "ws://localhost:8080/ws")!
     let transport = WampSocket(wsEndpoint: url)
+
     let s = WampSession(realm: "realm1", transport: transport, authmethods: ["anonymous"])
     s.delegate = delegate
     s.connect()
     return s
 }
+
+// MARK: Subscriptions
 
 class CrossbarRouterTest: XCTestCase, WampSessionDelegate {
     var exp: XCTestExpectation!
@@ -174,6 +177,8 @@ class CrossbarSubscribeDelegateTest: XCTestCase, WampSessionDelegate {
 }
 
 // TODO: UNSUBSCRIBE TEST
+
+// MARK: Registrations
 
 class CrossbarRegisterCalleeCallbacksTest: XCTestCase, WampSessionDelegate {
     var exp: XCTestExpectation!
@@ -373,3 +378,24 @@ class CrossbarRemoteProcedureCallDelegateTest: XCTestCase, WampSessionDelegate {
     }
 }
 // TODO: UNREGISTER TEST
+
+
+// MARK: Regression Tests
+
+
+class CustomHTTPHeadersTest: XCTestCase {
+
+    func testCustomHeaders() {
+        let url = URL(string: "ws://localhost:8080/ws")!
+        
+        var headerDict: [httpHeader:httpHeaderValue] = [:]
+        
+        for i in 0...10 {
+            headerDict["header\(i)"] = "value\(i)"
+        }
+        
+        let transport = WampSocket(wsEndpoint: url, httpHeaders: headerDict)
+        
+        
+    }
+}

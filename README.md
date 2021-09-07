@@ -316,6 +316,30 @@ func wampPubError(details: [String : Any], error: String) {
 
 ___
 
+## Handle network connections
+
+```swift
+// Handle connection viability
+connection.viabilityUpdateHandler = { (isViable) in
+    if (!isViable) {
+        // Handle connection temporarily losing connectivity
+    } else {
+        // Handle connection return to connectivity
+    }
+}
+
+// Handle better paths
+connection.betterPathUpdateHandler = { (betterPathAvailable) in
+    if (betterPathAvailable) {
+        // Start a new connection if migration is possible
+    } else {
+        // Stop any attempts to migrate
+    }
+}
+```
+
+___
+
 ## Testing
 
 For now, only integration tests against crossbar exist.
