@@ -11,6 +11,14 @@ import Starscream
 public typealias httpHeader = String
 public typealias httpHeaderValue = String
 
+/**
+ WampSocker
+ 
+ Initialiase websocket with URL of router and optionally add additional headers.
+ 
+ - parameter wsEndpoint:  URL
+ - parameter httpHeaders: [String formatted header name : String formatted header value] (Default: nil)
+ */
 open class WampSocket: WebSocketDelegate, WampTransport {
     
     public var delegate: WampTransportDelegate?

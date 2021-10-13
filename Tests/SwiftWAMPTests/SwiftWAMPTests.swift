@@ -388,13 +388,21 @@ class CustomHTTPHeadersTest: XCTestCase {
     func testCustomHeaders() {
         let url = URL(string: "ws://localhost:8080/ws")!
         
-        var headerDict: [httpHeader:httpHeaderValue] = [:]
+        var headerDict: [httpHeader:httpHeaderValue] = ["Sec-WebSocket-Protocol": "wamp.2.json, wamp.2.msgpack"]
         
         for i in 0...10 {
             headerDict["header\(i)"] = "value\(i)"
         }
         
-        let transport = WampSocket(wsEndpoint: url, httpHeaders: headerDict)
+        var request = URLRequest(url: url)
+    
+        headerDict.forEach { (header: httpHeader, value: httpHeaderValue) in
+            request.setValue(value, forHTTPHeaderField: header)
+        }
+        
+        let setHeaders = request.allHTTPHeaderFields
+        
+        XCTAssert(headerDict == setHeaders)
         
         
     }
