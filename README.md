@@ -8,7 +8,7 @@
 
 [![SwiftPM compatible](https://img.shields.io/badge/SwiftPM-compatible-brightgreen.svg)](https://swift.org/package-manager/)
 
-Swift wamp is a [Web Application Messaging Protocal](https://wamp-proto.org/) implementation in Swift.
+Swift wamp is a [Web Application Messaging Protocol](https://wamp-proto.org/) implementation in Swift.
 
 It is compatable and tested using [CrossbarIO](https://crossbar.io/) router.
 
